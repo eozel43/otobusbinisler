@@ -1,0 +1,87 @@
+File loaded successfully.
+Shape: (22833, 31)
+
+Columns:
+- Tarih
+- Hat Kodu
+- Uzun Hat Adı
+- Kart Tipi
+- Normal Biniş Adet
+- Normal Biniş Tutar
+- Ardışık Biniş Adet
+- Ardışık Biniş Tutar
+- Ücretsiz Biniş Adet
+- Ücretsiz Biniş Tutar
+- Aktarma Biniş Adet
+- Aktarma Biniş Tutar
+- Abonman Biniş Adet
+- Abonman Biniş Tutar
+- İade Biniş Adet
+- İade Biniş Tutar
+- Genel Toplam Biniş Adet
+- Genel Toplam Biniş Tutar
+- Ücretli Biniş Adet
+- Kart Tipi Kümelenmiş
+- HatAdı
+- Ücretli/Ucretsiz kart
+- TAM_16TL
+- BASINKARTI_10TL
+- ILKOKUL-LISE(10TL)
+- KrediKartı_16TL
+- NFC-QR_20TL
+- UNI_OGRKARTI_15TL
+- UNI_OGR_8TL
+- IKAMETGAH_8TL
+- IKAMETGAH_12TL
+
+Data Types:
+Tarih                       datetime64[ns]
+Hat Kodu                            object
+Uzun Hat Adı                        object
+Kart Tipi                           object
+Normal Biniş Adet                    int64
+Normal Biniş Tutar                 float64
+Ardışık Biniş Adet                   int64
+Ardışık Biniş Tutar                float64
+Ücretsiz Biniş Adet                  int64
+Ücretsiz Biniş Tutar                 int64
+Aktarma Biniş Adet                   int64
+Aktarma Biniş Tutar                float64
+Abonman Biniş Adet                   int64
+Abonman Biniş Tutar                  int64
+İade Biniş Adet                      int64
+İade Biniş Tutar                     int64
+Genel Toplam Biniş Adet              int64
+Genel Toplam Biniş Tutar           float64
+Ücretli Biniş Adet                   int64
+Kart Tipi Kümelenmiş                object
+HatAdı                              object
+Ücretli/Ucretsiz kart               object
+TAM_16TL                             int64
+BASINKARTI_10TL                      int64
+ILKOKUL-LISE(10TL)                   int64
+KrediKartı_16TL                      int64
+NFC-QR_20TL                          int64
+UNI_OGRKARTI_15TL                    int64
+UNI_OGR_8TL                          int64
+IKAMETGAH_8TL                        int64
+IKAMETGAH_12TL                       int64
+
+First 5 rows:
+       Tarih             Hat Kodu           Uzun Hat Adı       Kart Tipi  Normal Biniş Adet  Normal Biniş Tutar  Ardışık Biniş Adet  Ardışık Biniş Tutar  Ücretsiz Biniş Adet  Ücretsiz Biniş Tutar  Aktarma Biniş Adet  Aktarma Biniş Tutar  Abonman Biniş Adet  Abonman Biniş Tutar  İade Biniş Adet  İade Biniş Tutar  Genel Toplam Biniş Adet  Genel Toplam Biniş Tutar  Ücretli Biniş Adet        Kart Tipi Kümelenmiş HatAdı Ücretli/Ucretsiz kart  TAM_16TL  BASINKARTI_10TL  ILKOKUL-LISE(10TL)  KrediKartı_16TL  NFC-QR_20TL  UNI_OGRKARTI_15TL  UNI_OGR_8TL  IKAMETGAH_8TL  IKAMETGAH_12TL
+0 2022-01-01  1453 KONUTLARI-VAZO  8-1453 KONUTLARI-VAZO         TAMKART              12118             42736.6                1680               6027.6                    0                     0                 490                579.0                   0                    0                0                 0                    14288                   49343.2               14288                    TAM KART      8          Ücretli Kart     13798                0                   0                0            0                  0            0              0               0
+1 2022-01-01  1453 KONUTLARI-VAZO  8-1453 KONUTLARI-VAZO  LİSE ÖĞRENCİSİ               3794              9364.4                 609               2187.9                    0                     0                 232                249.5                   0                    0                0                 0                     4635                   11801.8                4635          İLKOKUL-LİSE KARTI      8          Ücretli Kart       609                0                3794                0            0                  0            0              0               0
+2 2022-01-01  1453 KONUTLARI-VAZO  8-1453 KONUTLARI-VAZO        ÜCRETSİZ                  0                 0.0                   0                  0.0                    1                     0                   0                  0.0                   0                    0                0                 0                        1                       0.0                   0            ÜCRETSİZ KARTLAR      8         Ücretsiz Kart         0                0                   0                0            0                  0            0              0               0
+3 2022-01-01  1453 KONUTLARI-VAZO  8-1453 KONUTLARI-VAZO    65 YAŞ ÜZERİ                  0                 0.0                   0                  0.0                 1825                     0                   0                  0.0                   0                    0                0                 0                     1825                       0.0                   0             65 YAŞ VE ÜZERİ      8         Ücretsiz Kart         0                0                   0                0            0                  0            0              0               0
+4 2022-01-01  1453 KONUTLARI-VAZO  8-1453 KONUTLARI-VAZO         ENGELLİ                  0                 0.0                   0                  0.0                  576                     0                   0                  0.0                   0                    0                0                 0                      576                       0.0                   0  ENGELLİ VE REFAKATÇİ KARTI      8         Ücretsiz Kart         0                0                   0                0            0                  0            0              0               0
+
+Numeric Description:
+                               Tarih  Normal Biniş Adet  Normal Biniş Tutar  Ardışık Biniş Adet  Ardışık Biniş Tutar  Ücretsiz Biniş Adet  Ücretsiz Biniş Tutar  Aktarma Biniş Adet  Aktarma Biniş Tutar  Abonman Biniş Adet  Abonman Biniş Tutar  İade Biniş Adet  İade Biniş Tutar  Genel Toplam Biniş Adet  Genel Toplam Biniş Tutar  Ücretli Biniş Adet       TAM_16TL  BASINKARTI_10TL  ILKOKUL-LISE(10TL)  KrediKartı_16TL   NFC-QR_20TL  UNI_OGRKARTI_15TL   UNI_OGR_8TL  IKAMETGAH_8TL  IKAMETGAH_12TL
+count                          22833       22833.000000        2.283300e+04        22833.000000         22833.000000         22833.000000               22833.0        22833.000000         22833.000000             22833.0              22833.0          22833.0           22833.0             22833.000000              2.283300e+04        22833.000000   22833.000000     22833.000000        22833.000000     22833.000000  22833.000000       22833.000000  22833.000000   22833.000000    22833.000000
+mean   2024-01-17 14:03:46.093811712        2968.612053        3.489920e+04          379.491876          5087.386555           436.988744                   0.0           67.203696           424.402942                 0.0                  0.0              0.0               0.0              3852.296369              4.041099e+04         3415.307625    1629.853283         0.068410          607.395962       213.233522    136.099724         647.179127     69.063767       1.940656       43.265581
+min              2022-01-01 00:00:00           0.000000        0.000000e+00            0.000000             0.000000             0.000000                   0.0            0.000000             0.000000                 0.0                  0.0              0.0               0.0                 1.000000              0.000000e+00            0.000000       0.000000         0.000000            0.000000         0.000000      0.000000           0.000000      0.000000       0.000000        0.000000
+25%              2023-01-01 00:00:00           0.000000        0.000000e+00            0.000000             0.000000             0.000000                   0.0            0.000000             0.000000                 0.0                  0.0              0.0               0.0                23.000000              0.000000e+00            0.000000       0.000000         0.000000            0.000000         0.000000      0.000000           0.000000      0.000000       0.000000        0.000000
+50%              2024-02-01 00:00:00           6.000000        4.800000e+01            0.000000             0.000000             0.000000                   0.0            0.000000             0.000000                 0.0                  0.0              0.0               0.0               219.000000              1.050000e+02           10.000000       0.000000         0.000000            0.000000         0.000000      0.000000           0.000000      0.000000       0.000000        0.000000
+75%              2025-02-01 00:00:00         675.000000        6.434500e+03           54.000000           660.000000            47.000000                   0.0           11.000000            54.000000                 0.0                  0.0              0.0               0.0              1536.000000              8.396000e+03          801.000000      84.000000         0.000000            0.000000         0.000000      0.000000           0.000000      0.000000       0.000000        0.000000
+max              2026-01-01 00:00:00      163125.000000        3.281975e+06        28274.000000        452368.000000         41926.000000                   0.0         3358.000000         26170.000000                 0.0                  0.0              0.0               0.0            178157.000000              3.709100e+06       178157.000000  158697.000000        62.000000        85963.000000     48791.000000  21506.000000      163125.000000  73454.000000    4135.000000    14165.000000
+std                              NaN       11931.480102        1.631761e+05         1576.085335         22658.149811          2226.209408                   0.0          252.992815          1829.029227                 0.0                  0.0              0.0               0.0             13673.002312              1.850506e+05        13600.597246   10438.684593         1.091936         4236.268290      2034.820247   1081.737466        6087.534118   1612.684638      63.379973      428.725763

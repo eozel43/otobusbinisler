@@ -1,0 +1,6 @@
+.agent/
+agent_extracted/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
