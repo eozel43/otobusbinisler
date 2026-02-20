@@ -99,34 +99,31 @@ function App() {
         });
         const topRoutes = Object.values(routeMap).sort((a, b) => b.boardings - a.boardings).slice(0, 10);
 
-        // 4. Prepare Card Types (for pie chart)
-        // Sum specific columns across filtered records
-        const totals = filteredRecords.reduce((acc, r) => {
-            acc.tam += r.tam || 0;
-            acc.lise += r.lise || 0;
-            acc.uni += r.uni || 0;
-            acc.free += r.free || 0;
-            acc.abonman += r.abonman || 0;
-            acc.aktarma += r.aktarma || 0;
-            acc.kredi_nfc += r.kredi_nfc || 0;
-            return acc;
-        }, { tam: 0, lise: 0, uni: 0, free: 0, abonman: 0, aktarma: 0, kredi_nfc: 0 });
+        // 4. Prepare Card Types (for pie chart) based on cluster
+        const clusterMap = {};
+        const typeMap = {};
 
-        let cardTypes = [
-            { name: 'Tam', value: totals.tam },
-            { name: 'Lise', value: totals.lise },
-            { name: 'Üniversite', value: totals.uni },
-            { name: 'Ücretsiz', value: totals.free },
-            { name: 'Abonman', value: totals.abonman },
-            { name: 'Aktarma', value: totals.aktarma },
-            { name: 'Kredi/NFC', value: totals.kredi_nfc },
-        ].filter(i => i.value > 0);
+        filteredRecords.forEach(r => {
+            const boardingCount = useFreeColumn ? (r.free || 0) : (r.boardings || 0);
 
-        // If useFreeColumn is active, we might want to show only 'Ücretsiz' logic or distribution of free cards?
-        // Original logic: if useFreeColumn true, restrict to 'Ücretsiz'.
-        if (useFreeColumn) {
-            cardTypes = cardTypes.filter(c => c.name === 'Ücretsiz');
-        }
+            // Map clusters
+            if (!clusterMap[r.cluster]) clusterMap[r.cluster] = 0;
+            clusterMap[r.cluster] += boardingCount;
+
+            // Map types (Paid vs Free)
+            if (!typeMap[r.type]) typeMap[r.type] = 0;
+            typeMap[r.type] += boardingCount;
+        });
+
+        const cardTypes = Object.keys(clusterMap).map(name => ({
+            name: name || 'Tanımsız',
+            value: clusterMap[name]
+        })).filter(i => i.value > 0).sort((a, b) => b.value - a.value);
+
+        const paidFreeTypes = Object.keys(typeMap).map(name => ({
+            name: name || 'Tanımsız',
+            value: typeMap[name]
+        })).filter(i => i.value > 0).sort((a, b) => b.value - a.value);
 
         // 5. Pass filtered records to Chart (chart handles its own date aggregation)
         // We map 'boardings' in trends to the correct metric so the chart updates automatically
@@ -139,6 +136,7 @@ function App() {
             kpi: { totalBoardings, totalRevenue, freeBoardings },
             topRoutes,
             cardTypes,
+            paidFreeTypes,
             trends,
             filters: augmentedFilters
         };
@@ -218,9 +216,16 @@ function App() {
                 </div>
 
                 {/* Charts Section */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                <div className="grid gap-4 md:grid-cols-1">
                     <TrendChart data={dashboardData.trends} key={selectedFilters.onlyFree ? 'free' : 'normal'} />
-                    <CardTypePie data={dashboardData.cardTypes} />
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <CardTypePie data={dashboardData.cardTypes} />
+                        <CardTypePie
+                            data={dashboardData.paidFreeTypes}
+                            title="Ücretli / Ücretsiz"
+                            description="Ücretli ve ücretsiz biniş oranları"
+                        />
+                    </div>
                 </div>
 
                 {/* Tables Section */}

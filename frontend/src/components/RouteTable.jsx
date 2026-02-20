@@ -10,35 +10,38 @@ export function RouteTable({ data }) {
             </div>
             <div className="p-0 flex-1 overflow-hidden">
                 <div className="h-full w-full overflow-auto">
-                    <table className="w-full caption-bottom text-sm text-left">
-                        <thead className="[&_tr]:border-b sticky top-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 z-10 shadow-sm">
-                            <tr className="border-b border-border transition-colors">
-                                <th className="h-10 px-6 align-middle font-medium text-muted-foreground text-xs uppercase tracking-wider">Hat Adı</th>
-                                <th className="h-10 px-6 align-middle font-medium text-muted-foreground text-right text-xs uppercase tracking-wider">Biniş Adedi</th>
-                                <th className="h-10 px-6 align-middle font-medium text-muted-foreground text-right text-xs uppercase tracking-wider">Hasılat</th>
-                            </tr>
-                        </thead>
-                        <tbody className="[&_tr:last-child]:border-0">
-                            {data.map((route, index) => (
-                                <tr key={index} className="border-b border-border transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted group">
-                                    <td className="p-4 px-6 align-middle font-medium text-foreground transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground ring-1 ring-border">
-                                                {index + 1}
-                                            </span>
-                                            {route.name}
-                                        </div>
-                                    </td>
-                                    <td className="p-4 px-6 align-middle text-right font-mono text-foreground/80 transition-colors">
-                                        {new Intl.NumberFormat('tr-TR').format(route.boardings)}
-                                    </td>
-                                    <td className="p-4 px-6 align-middle text-right font-mono text-primary group-hover:text-primary/80 transition-colors">
-                                        {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(route.revenue)}
-                                    </td>
+                    {/* Add overflow-x-auto to wrapper for horizontal scrolling on mobile */}
+                    <div className="overflow-x-auto w-full">
+                        <table className="w-full caption-bottom text-sm text-left min-w-[600px]">
+                            <thead className="[&_tr]:border-b sticky top-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 z-10 shadow-sm">
+                                <tr className="border-b border-border transition-colors">
+                                    <th className="h-10 px-6 align-middle font-medium text-muted-foreground text-xs uppercase tracking-wider">Hat Adı</th>
+                                    <th className="h-10 px-6 align-middle font-medium text-muted-foreground text-right text-xs uppercase tracking-wider">Biniş Adedi</th>
+                                    <th className="h-10 px-6 align-middle font-medium text-muted-foreground text-right text-xs uppercase tracking-wider">Hasılat</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="[&_tr:last-child]:border-0">
+                                {data.map((route, index) => (
+                                    <tr key={index} className="border-b border-border transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted group">
+                                        <td className="p-4 px-6 align-middle font-medium text-foreground transition-colors whitespace-nowrap">
+                                            <div className="flex items-center gap-3">
+                                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground ring-1 ring-border">
+                                                    {index + 1}
+                                                </span>
+                                                {route.name}
+                                            </div>
+                                        </td>
+                                        <td className="p-4 px-6 align-middle text-right font-mono text-foreground/80 transition-colors whitespace-nowrap">
+                                            {new Intl.NumberFormat('tr-TR').format(route.boardings)}
+                                        </td>
+                                        <td className="p-4 px-6 align-middle text-right font-mono text-primary group-hover:text-primary/80 transition-colors whitespace-nowrap">
+                                            {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(route.revenue)}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

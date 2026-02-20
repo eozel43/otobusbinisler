@@ -32,7 +32,7 @@ export function Login({ onLogin }) {
                     </div>
 
                     <div>
-                        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Ulaşım Hizmetleri Müdürlüğü</h3>
+                        <h3 className="text-xl font-extrabold tracking-wide uppercase text-blue-950 dark:text-blue-300">Ulaşım Hizmetleri Müdürlüğü</h3>
                         <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Ulaşım Analiz Paneli Girişi</p>
                     </div>
                 </div>

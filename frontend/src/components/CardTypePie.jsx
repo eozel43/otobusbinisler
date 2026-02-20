@@ -4,14 +4,14 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1'];
 
-export function CardTypePie({ data }) {
+export function CardTypePie({ data, title = "Kart Tipi Dağılımı", description = "Kullanılan kart türlerine göre oranlar" }) {
     const total = React.useMemo(() => data.reduce((acc, curr) => acc + curr.value, 0), [data]);
 
     return (
-        <div className="rounded-xl border bg-card text-card-foreground shadow col-span-3 flex flex-col h-[400px]">
+        <div className="rounded-xl border bg-card text-card-foreground shadow flex flex-col h-[400px]">
             <div className="p-6 pb-4 flex flex-col space-y-1.5 shrink-0">
-                <h3 className="font-semibold leading-none tracking-tight">Kart Tipi Dağılımı</h3>
-                <p className="text-sm text-muted-foreground">Kullanılan kart türlerine göre oranlar</p>
+                <h3 className="font-semibold leading-none tracking-tight">{title}</h3>
+                <p className="text-sm text-muted-foreground">{description}</p>
             </div>
             <div className="p-0 flex-1 min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
@@ -45,7 +45,18 @@ export function CardTypePie({ data }) {
                                 name
                             ]}
                         />
-                        <Legend verticalAlign="bottom" height={36} iconType="circle" iconSize={8} />
+                        <Legend
+                            verticalAlign="bottom"
+                            align="center"
+                            height={48}
+                            iconType="circle"
+                            iconSize={8}
+                            wrapperStyle={{
+                                fontSize: '11px',
+                                lineHeight: '14px',
+                                paddingTop: '10px'
+                            }}
+                        />
                     </PieChart>
                 </ResponsiveContainer>
             </div>
