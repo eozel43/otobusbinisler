@@ -70,9 +70,9 @@ def process_data():
     
     # --- Filter Options ---
     # Extract unique values for filter dropdowns
-    routes = sorted(df['Uzun Hat Adı'].unique().tolist())
-    clusters = sorted(df['Kart Tipi Kümelenmiş'].dropna().unique().tolist())
-    types = sorted(df['Ücretli/Ucretsiz kart'].dropna().unique().tolist())
+    routes = sorted([str(x) for x in df['Uzun Hat Adı'].dropna().unique()])
+    clusters = sorted([str(x) for x in df['Kart Tipi Kümelenmiş'].dropna().unique()])
+    types = sorted([str(x) for x in df['Ücretli/Ucretsiz kart'].dropna().unique()])
 
     # --- Grouped Data for Frontend Filtering ---
     grouped = group_and_transform_data(df)
