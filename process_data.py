@@ -14,6 +14,11 @@ def group_and_transform_data(df):
     Groups the raw dataframe by selected dimensions and applies aggregation logic.
     Made separate for testability.
     """
+    df = df.copy()
+    df['Kart Tipi Kümelenmiş'] = df['Kart Tipi Kümelenmiş'].fillna('Tanımsız')
+    df['Ücretli/Ucretsiz kart'] = df['Ücretli/Ucretsiz kart'].fillna('Tanımsız')
+    df['Uzun Hat Adı'] = df['Uzun Hat Adı'].fillna('Tanımsız')
+    
     grouped = df.groupby([
         df['Tarih'].dt.strftime('%Y-%m-%d'), 
         'Uzun Hat Adı', 
@@ -67,12 +72,15 @@ def process_data():
     
     # Ensure Date is datetime
     df['Tarih'] = pd.to_datetime(df['Tarih'])
+    df['Kart Tipi Kümelenmiş'] = df['Kart Tipi Kümelenmiş'].fillna('Tanımsız')
+    df['Ücretli/Ucretsiz kart'] = df['Ücretli/Ucretsiz kart'].fillna('Tanımsız')
+    df['Uzun Hat Adı'] = df['Uzun Hat Adı'].fillna('Tanımsız')
     
     # --- Filter Options ---
     # Extract unique values for filter dropdowns
-    routes = sorted([str(x) for x in df['Uzun Hat Adı'].dropna().unique()])
-    clusters = sorted([str(x) for x in df['Kart Tipi Kümelenmiş'].dropna().unique()])
-    types = sorted([str(x) for x in df['Ücretli/Ucretsiz kart'].dropna().unique()])
+    routes = sorted([str(x) for x in df['Uzun Hat Adı'].unique()])
+    clusters = sorted([str(x) for x in df['Kart Tipi Kümelenmiş'].unique()])
+    types = sorted([str(x) for x in df['Ücretli/Ucretsiz kart'].unique()])
 
     # --- Grouped Data for Frontend Filtering ---
     grouped = group_and_transform_data(df)
