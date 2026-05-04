@@ -28,7 +28,7 @@ function App() {
 
     useEffect(() => {
         console.log("App Version: v1.4 (Ortalama KPI & Yeni Donut Chartlar Eklendi)"); // Verification Log
-        fetch('/data/dashboard_data.json')
+        fetch(`/data/dashboard_data.json?t=${new Date().getTime()}`)
             .then(res => res.json())
             .then(data => {
                 setRawData(data);
