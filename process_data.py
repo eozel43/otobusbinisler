@@ -85,8 +85,13 @@ def process_data():
     # --- Grouped Data for Frontend Filtering ---
     grouped = group_and_transform_data(df)
 
+    import datetime
+    mtime = os.path.getmtime(INPUT_FILE)
+    last_updated = datetime.datetime.fromtimestamp(mtime).strftime('%d.%m.%Y')
+
     # --- Construct Final JSON ---
     dashboard_data = {
+        'lastUpdated': last_updated,
         'filters': {
             'routes': routes,
             'clusters': clusters,

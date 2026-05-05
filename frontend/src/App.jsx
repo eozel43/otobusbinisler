@@ -66,9 +66,11 @@ function App() {
 
     // --- Dynamic Aggregation Logic ---
     const lastUpdatedDate = useMemo(() => {
-        // Return today's date always
+        if (rawData && rawData.lastUpdated) {
+            return rawData.lastUpdated;
+        }
         return new Date().toLocaleDateString('tr-TR');
-    }, []);
+    }, [rawData]);
 
     const dashboardData = useMemo(() => {
         if (!rawData) return null;
