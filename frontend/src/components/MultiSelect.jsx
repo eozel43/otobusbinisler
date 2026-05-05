@@ -70,7 +70,19 @@ export function MultiSelect({ options, selected, onChange, label, placeholder = 
     return (
         <div className="relative" ref={containerRef}>
             <div
-                className="w-full bg-background border border-input rounded-lg py-2.5 px-3 text-sm text-foreground flex items-center justify-between cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors focus:ring-2 focus:ring-ring/50"
+                role="combobox"
+                aria-expanded={isOpen}
+                aria-haspopup="listbox"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setIsOpen(!isOpen);
+                    } else if (e.key === 'Escape') {
+                        setIsOpen(false);
+                    }
+                }}
+                className="w-full bg-background border border-input rounded-lg py-2.5 px-3 text-sm text-foreground flex items-center justify-between cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors focus:ring-2 focus:ring-ring/50 outline-none"
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <div className="flex gap-1 overflow-hidden">
@@ -80,7 +92,10 @@ export function MultiSelect({ options, selected, onChange, label, placeholder = 
             </div>
 
             {isOpen && (
-                <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-lg shadow-md max-h-60 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-100">
+                <div 
+                    role="listbox"
+                    className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-lg shadow-md max-h-60 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-100"
+                >
 
                     {/* Search and Select All */}
                     <div className="p-2 border-b border-border space-y-2 bg-popover sticky top-0 z-10">
@@ -116,7 +131,16 @@ export function MultiSelect({ options, selected, onChange, label, placeholder = 
                                 return (
                                     <div
                                         key={opt.value}
-                                        className="flex items-center space-x-2 px-2 py-1.5 hover:bg-accent rounded cursor-pointer text-sm select-none"
+                                        role="option"
+                                        aria-selected={isSelected}
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                toggleOption(opt.value);
+                                            }
+                                        }}
+                                        className="flex items-center space-x-2 px-2 py-1.5 hover:bg-accent rounded cursor-pointer text-sm select-none outline-none focus:bg-accent"
                                         onClick={() => toggleOption(opt.value)}
                                     >
                                         <div className={`h-4 w-4 rounded border border-primary flex items-center justify-center transition-colors ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-transparent border-muted-foreground'}`}>

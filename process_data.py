@@ -111,7 +111,7 @@ def process_data():
                 return obj.tolist()
             return super(NpEncoder, self).default(obj)
 
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+    with open(OUTPUT_FILE, 'w', encoding='utf-8-sig') as f:
         json.dump(dashboard_data, f, ensure_ascii=False, indent=2, cls=NpEncoder)
         
     print(f"Data saved to {OUTPUT_FILE}")

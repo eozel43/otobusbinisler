@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { LayoutDashboard, Users, CreditCard, Wallet, TrendingUp, LogOut, Bus } from 'lucide-react';
+import { Users, CreditCard, Wallet, LogOut, Bus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StatsCard } from './components/StatsCard';
 import { TrendChart } from './components/TrendChart';
@@ -10,12 +10,14 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { Login } from './components/Login';
 import { SummaryTable } from './components/SummaryTable';
 import { HeatmapChart } from './components/HeatmapChart';
+import { processDashboardData } from './utils/analytics';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [rawData, setRawData] = useState(null);
 
     const [loading, setLoading] = useState(true);
+    const [fetchError, setFetchError] = useState(null);
 
     const [selectedFilters, setSelectedFilters] = useState({
         year: [],
@@ -27,8 +29,7 @@ function App() {
     });
 
     useEffect(() => {
-        console.log("App Version: v1.4 (Ortalama KPI & Yeni Donut Chartlar Eklendi)"); // Verification Log
-        fetch(`/data/dashboard_data.json?t=${new Date().getTime()}`)
+        fetch(`/data/dashboard_data.json`)
             .then(res => res.json())
             .then(data => {
                 setRawData(data);
@@ -36,24 +37,9 @@ function App() {
             })
             .catch(err => {
                 console.error("Error loading data:", err);
+                setFetchError("Veriler yüklenirken bir sorun oluştu. Lütfen bağlantınızı kontrol edip sayfayı yenileyin.");
                 setLoading(false);
             });
-
-        // Print Screen prevention
-        const handleKeyUp = (e) => {
-            if (e.key === 'PrintScreen') {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText('');
-                }
-                alert('Ekran görüntüsü alınmasına izin verilmiyor.');
-            }
-        };
-
-        window.addEventListener('keyup', handleKeyUp);
-
-        return () => {
-            window.removeEventListener('keyup', handleKeyUp);
-        };
     }, []);
 
     const handleFilterChange = (key, value) => {
@@ -73,163 +59,7 @@ function App() {
     }, [rawData]);
 
     const dashboardData = useMemo(() => {
-        if (!rawData) return null;
-
-        // Extract available Years and Months for filters
-        const availableYears = [...new Set(rawData.records.map(r => r.date.substring(0, 4)))].sort().reverse();
-        const availableMonths = [...new Set(rawData.records.map(r => parseInt(r.date.substring(5, 7), 10)))].sort((a, b) => a - b);
-
-        const augmentedFilters = {
-            ...rawData.filters,
-            years: availableYears,
-            months: availableMonths
-        };
-
-        // 1. Filter Records
-        const filteredRecords = rawData.records.filter(record => {
-            const rYear = record.date.substring(0, 4);
-            const rMonth = parseInt(record.date.substring(5, 7), 10);
-
-            if (selectedFilters.year.length > 0 && !selectedFilters.year.includes(rYear)) return false;
-            // Ensure types match (selectedFilters.month has numbers)
-            if (selectedFilters.month.length > 0 && !selectedFilters.month.includes(rMonth)) return false;
-
-            if (selectedFilters.route.length > 0 && !selectedFilters.route.includes(record.route)) return false;
-            if (selectedFilters.cluster.length > 0 && !selectedFilters.cluster.includes(record.cluster)) return false;
-            if (selectedFilters.type.length > 0 && !selectedFilters.type.includes(record.type)) return false;
-            return true;
-        });
-
-        // 2. Calculate Totals
-        // If onlyFree is selected (and we are allowing free toggling), use 'free' column.
-        // Logic: specific toggle for analyzing free rides more deeply.
-        // We only enable this mode if "Ücretsiz Kart" is included in selection (or if type selected is empty, effectively all)
-        // But strict from previous requirement: "selected.type === 'Free Card'"
-        // Let's adjust: If 'Ücretsiz Kart' is selected AND 'onlyFree' is checked.
-        const includesFreeCard = selectedFilters.type.includes('Ücretsiz Kart');
-        const useFreeColumn = includesFreeCard && selectedFilters.onlyFree;
-
-        const totalBoardings = filteredRecords.reduce((sum, r) => sum + (useFreeColumn ? (r.free || 0) : (r.boardings || 0)), 0);
-        // Revenue should be 0 if we are only looking at free rides
-        const totalRevenue = useFreeColumn ? 0 : filteredRecords.reduce((sum, r) => sum + (r.revenue || 0), 0);
-        const freeBoardings = filteredRecords.reduce((sum, r) => sum + (r.free || 0), 0);
-        const totalKrediNfc = filteredRecords.reduce((sum, r) => sum + (useFreeColumn ? 0 : (r.kredi_nfc || 0)), 0);
-        const totalAktarma = filteredRecords.reduce((sum, r) => sum + (useFreeColumn ? 0 : (r.aktarma || 0)), 0);
-        
-        const uniqueMonths = new Set(filteredRecords.map(r => r.date.substring(0, 7)));
-        const uniqueMonthsCount = uniqueMonths.size || 1;
-
-        // 3. Prepare Top Routes (for table)
-        // Group by route name and sum boardings
-        const routeMap = {};
-        filteredRecords.forEach(r => {
-            if (!routeMap[r.route]) routeMap[r.route] = { name: r.route, boardings: 0, revenue: 0 };
-            routeMap[r.route].boardings += useFreeColumn ? (r.free || 0) : (r.boardings || 0);
-            routeMap[r.route].revenue += useFreeColumn ? 0 : (r.revenue || 0);
-        });
-        const topRoutes = Object.values(routeMap).sort((a, b) => b.boardings - a.boardings);
-
-        // 4. Prepare Card Types (for pie chart) based on cluster
-        const clusterMap = {};
-        const typeMap = {};
-
-        filteredRecords.forEach(r => {
-            const boardingCount = useFreeColumn ? (r.free || 0) : (r.boardings || 0);
-
-            // Map clusters
-            if (!clusterMap[r.cluster]) clusterMap[r.cluster] = 0;
-            clusterMap[r.cluster] += boardingCount;
-
-            // Map types (Paid vs Free)
-            if (!typeMap[r.type]) typeMap[r.type] = 0;
-            typeMap[r.type] += boardingCount;
-        });
-
-        const cardTypes = Object.keys(clusterMap).map(name => ({
-            name: name || 'Tanımsız',
-            value: clusterMap[name]
-        })).filter(i => i.value > 0).sort((a, b) => b.value - a.value);
-
-        const paidFreeTypes = Object.keys(typeMap).map(name => ({
-            name: name || 'Tanımsız',
-            value: typeMap[name]
-        })).filter(i => i.value > 0).sort((a, b) => b.value - a.value);
-
-        // 5. Pass filtered records to Chart (chart handles its own date aggregation)
-        // We map 'boardings' in trends to the correct metric so the chart updates automatically
-        const trends = filteredRecords.map(r => ({
-            ...r,
-            boardings: useFreeColumn ? (r.free || 0) : (r.boardings || 0)
-        }));
-
-        const krediPieData = [
-            { name: 'Kredi Kartı', value: totalKrediNfc },
-            { name: 'Diğer', value: Math.max(0, totalBoardings - totalKrediNfc) }
-        ].filter(i => i.value > 0);
-
-        const aktarmaPieData = [
-            { name: 'Aktarma', value: totalAktarma },
-            { name: 'Normal Biniş', value: Math.max(0, totalBoardings - totalAktarma) }
-        ].filter(i => i.value > 0);
-
-        // 6. Aggregate Summary Data by Year for the new table
-        const summaryData = {};
-        const heatmapData = {}; // Format: { year: { month1: val, month2: val, ... } }
-        
-        // Initialize maps with all years to ensure layout (grid/table) doesn't collapse on year filter
-        availableYears.forEach(y => { 
-            heatmapData[y] = {}; 
-            summaryData[y] = {
-                tam: 0, basin: 0, lise: 0, kredi: 0, nfc: 0, 
-                uni_ogrenci: 0, uni_16no_all: 0, uni_ikamet: 0, aktarma: 0,
-                abonman: 0, iade: 0
-            };
-        });
-
-        filteredRecords.forEach(r => {
-            const year = r.date.substring(0, 4);
-            const month = parseInt(r.date.substring(5, 7), 10);
-            const boardingsCount = useFreeColumn ? (r.free || 0) : (r.boardings || 0);
-
-            // Populate Heatmap Data
-            if (!heatmapData[year]) heatmapData[year] = {};
-            if (!heatmapData[year][month]) heatmapData[year][month] = 0;
-            heatmapData[year][month] += boardingsCount;
-
-            // Populate Summary Table Data
-            if (!summaryData[year]) {
-                summaryData[year] = {
-                    tam: 0, basin: 0, lise: 0, kredi: 0, nfc: 0, 
-                    uni_ogrenci: 0, uni_16no_all: 0, uni_ikamet: 0, aktarma: 0,
-                    abonman: 0, iade: 0
-                };
-            }
-            // ... the rest of the summaryData assignments remain unchanged
-            summaryData[year].tam += r.tam || 0;
-            summaryData[year].basin += r.basin || 0;
-            summaryData[year].lise += r.lise || 0;
-            summaryData[year].kredi += r.kredi || 0;
-            summaryData[year].nfc += r.nfc || 0;
-            summaryData[year].uni_ogrenci += r.uni_ogrenci || 0;
-            summaryData[year].uni_16no_all += (r.uni_16no || 0) + (r.uni_ikamet_16no || 0);
-            summaryData[year].uni_ikamet += r.uni_ikamet_kart || 0;
-            summaryData[year].aktarma += r.aktarma || 0;
-            summaryData[year].abonman += r.abonman || 0;
-            summaryData[year].iade += r.iade || 0;
-        });
-
-        return {
-            kpi: { totalBoardings, totalRevenue, freeBoardings, uniqueMonthsCount },
-            topRoutes,
-            cardTypes,
-            paidFreeTypes,
-            krediPieData,
-            aktarmaPieData,
-            trends,
-            summaryData,
-            heatmapData,
-            filters: augmentedFilters
-        };
+        return processDashboardData(rawData, selectedFilters);
     }, [rawData, selectedFilters]);
 
     if (!isAuthenticated) {
@@ -244,9 +74,25 @@ function App() {
         );
     }
 
+    if (fetchError) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-slate-950 text-white gap-4">
+                <div className="text-red-500 bg-red-500/10 p-4 rounded-full">
+                    <LogOut className="h-12 w-12" />
+                </div>
+                <h2 className="text-xl font-bold">Bağlantı Hatası</h2>
+                <p className="text-slate-400">{fetchError}</p>
+                <button 
+                    onClick={() => window.location.reload()} 
+                    className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                >
+                    Tekrar Dene
+                </button>
+            </div>
+        );
+    }
+
     if (!rawData) return null;
-
-
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-foreground font-sans transition-colors duration-500 selection:bg-blue-500/30">

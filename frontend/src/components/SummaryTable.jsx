@@ -1,22 +1,22 @@
 
 import React, { useMemo } from 'react';
 
+const categories = [
+    { key: 'tam', label: 'TAM BİNİŞLER' },
+    { key: 'basin', label: 'BASIN KARTLI BİNİŞLER' },
+    { key: 'lise', label: 'İLKOKUL-LİSE BİNİŞLER' },
+    { key: 'kredi', label: 'KREDİ KARTI BİNİŞLER' },
+    { key: 'nfc', label: 'NFC-QR BİNİŞLER' },
+    { key: 'uni_ogrenci', label: 'ÜNİVERSİTE ÖĞRENCİ KARTI BİNİŞ' },
+    { key: 'uni_ikamet', label: 'ÜNİVERSİTE ÖĞR. İKAMET KART BİNİŞ' },
+    { key: 'uni_16no_all', label: '16NUMARA OGRENCİ' },
+    { key: 'aktarma', label: 'AKTARMA BİNİŞ' }
+];
+
 export function SummaryTable({ data }) {
     if (!data || Object.keys(data).length === 0) return null;
 
     const years = Object.keys(data).sort();
-    
-    const categories = [
-        { key: 'tam', label: 'TAM BİNİŞLER' },
-        { key: 'basin', label: 'BASIN KARTLI BİNİŞLER' },
-        { key: 'lise', label: 'İLKOKUL-LİSE BİNİŞLER' },
-        { key: 'kredi', label: 'KREDİ KARTI BİNİŞLER' },
-        { key: 'nfc', label: 'NFC-QR BİNİŞLER' },
-        { key: 'uni_ogrenci', label: 'ÜNİVERSİTE ÖĞRENCİ KARTI BİNİŞ' },
-        { key: 'uni_ikamet', label: 'ÜNİVERSİTE ÖĞR. İKAMET KART BİNİŞ' },
-        { key: 'uni_16no_all', label: '16NUMARA OGRENCİ' },
-        { key: 'aktarma', label: 'AKTARMA BİNİŞ' }
-    ];
 
     const { categoryTotals, grandTotal } = useMemo(() => {
         const totals = {};
@@ -30,7 +30,7 @@ export function SummaryTable({ data }) {
             grand += catTotal;
         });
         return { categoryTotals: totals, grandTotal: grand };
-    }, [data, categories, years]);
+    }, [data, years]);
 
     return (
         <div className="w-full rounded-xl border bg-card text-card-foreground shadow flex flex-col overflow-hidden">
