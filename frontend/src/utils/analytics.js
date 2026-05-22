@@ -40,11 +40,18 @@ export function processDashboardData(rawData, selectedFilters) {
     // 3. Prepare Top Routes
     const routeMap = {};
     filteredRecords.forEach(r => {
-        if (!routeMap[r.route]) routeMap[r.route] = { name: r.route, boardings: 0, revenue: 0 };
+        if (!routeMap[r.route]) routeMap[r.route] = { name: r.route, boardings: 0, revenue: 0, free: 0 };
         routeMap[r.route].boardings += useFreeColumn ? (r.free || 0) : (r.boardings || 0);
         routeMap[r.route].revenue += useFreeColumn ? 0 : (r.revenue || 0);
+        routeMap[r.route].free += (r.free || 0);
     });
-    const topRoutes = Object.values(routeMap).sort((a, b) => b.boardings - a.boardings);
+    const topRoutes = Object.values(routeMap).map(r => {
+        const freeRatio = r.boardings > 0 ? (r.free / r.boardings) * 100 : 0;
+        return {
+            ...r,
+            freeRatio: parseFloat(freeRatio.toFixed(1))
+        };
+    }).sort((a, b) => b.boardings - a.boardings);
 
     // 4. Prepare Card Types
     const clusterMap = {};

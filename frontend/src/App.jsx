@@ -10,6 +10,7 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { Login } from './components/Login';
 import { SummaryTable } from './components/SummaryTable';
 import { HeatmapChart } from './components/HeatmapChart';
+import { RouteEfficiencyChart } from './components/RouteEfficiencyChart';
 import { processDashboardData } from './utils/analytics';
 
 function App() {
@@ -202,6 +203,7 @@ function App() {
                             largeLegend={true}
                         />
                     </div>
+                    <RouteEfficiencyChart data={dashboardData.topRoutes} />
                     {/* Heatmap Section */}
                     <AnimatePresence mode="wait">
                         <motion.div 
