@@ -13,14 +13,18 @@ def test_group_and_transform_data():
         'Genel Toplam Biniş Tutar': [1600, 400, 0],
         'Ücretsiz Biniş Adet': [0, 0, 20],
         # Types
-        'TAM_16TL': [100, 0, 0],
-        'ILKOKUL-LISE(10TL)': [0, 0, 0],
-        'UNI_OGRKARTI_15TL': [0, 20, 0],
-        'UNI_OGR_8TL': [0, 30, 0],
-        'Abonman Biniş Adet': [0, 0, 0],
+        'TAM BİNİŞ': [100, 0, 0],
+        'BASIN KARTLI BİNİŞ': [0, 0, 0],
+        'İLKOKUL-LİSE BİNİŞ': [0, 0, 0],
+        'KREDİ KARTI BİNİŞ': [0, 0, 0],
+        'NFC-QR BİNİŞ': [0, 0, 0],
+        'ÜNİVERSİTE ÖĞRENCİ KARTI': [0, 20, 0],
+        'ÜNİVERSİTE ÖĞR. 16 NOLU HAT': [0, 30, 0],
+        'ÜNİVERSİTE ÖĞR. İKAMET 16 NOLU HAT': [0, 0, 0],
+        'ÜNİVERSİTE ÖĞR. İKAMET KART': [0, 0, 0],
         'Aktarma Biniş Adet': [0, 0, 0],
-        'KrediKartı_16TL': [0, 0, 0],
-        'NFC-QR_20TL': [0, 0, 0]
+        'Abonman Biniş Adet': [0, 0, 0],
+        'İade Biniş Adet': [0, 0, 0]
     }
     
     df = pd.DataFrame(data)
@@ -36,11 +40,10 @@ def test_group_and_transform_data():
     student_row = grouped[(grouped['route'] == 'Hat 1') & (grouped['cluster'] == 'Öğrenci')].iloc[0]
     assert student_row['uni'] == 50  # 20 + 30
     
-    # 3. Check if dropped columns are gone
-    assert 'uni1' not in grouped.columns
-    assert 'uni2' not in grouped.columns
-    assert 'kredi' not in grouped.columns
-    assert 'nfc' not in grouped.columns
+    # 3. Check if combined fields exist
+    assert 'uni' in grouped.columns
+    assert 'kredi_nfc' in grouped.columns
+    assert 'uni_ikamet' in grouped.columns
     
     # 4. Check if date format is string 'YYYY-MM-DD'
     assert isinstance(grouped['date'].iloc[0], str)

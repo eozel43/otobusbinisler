@@ -18,7 +18,7 @@ export function SummaryTable({ data }) {
 
     const years = Object.keys(data).sort();
 
-    const { categoryTotals, grandTotal } = useMemo(() => {
+    const { categoryTotals, grandTotal, sortedCategories } = useMemo(() => {
         const totals = {};
         let grand = 0;
         categories.forEach(cat => {
@@ -29,7 +29,14 @@ export function SummaryTable({ data }) {
             totals[cat.key] = catTotal;
             grand += catTotal;
         });
-        return { categoryTotals: totals, grandTotal: grand };
+
+        const sorted = [...categories].sort((a, b) => {
+            const aTotal = totals[a.key] || 0;
+            const bTotal = totals[b.key] || 0;
+            return bTotal - aTotal;
+        });
+
+        return { categoryTotals: totals, grandTotal: grand, sortedCategories: sorted };
     }, [data, years]);
 
     return (
@@ -58,7 +65,7 @@ export function SummaryTable({ data }) {
                             </tr>
                         </thead>
                         <tbody className="[&_tr:last-child]:border-0 font-mono">
-                            {categories.map((cat, idx) => {
+                            {sortedCategories.map((cat, idx) => {
                                 const catTotal = categoryTotals[cat.key] || 0;
                                 const percent = grandTotal > 0 ? ((catTotal / grandTotal) * 100).toFixed(1) : "0.0";
                                 return (
