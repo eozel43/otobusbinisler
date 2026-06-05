@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { MultiSelect } from './MultiSelect';
 
 export function FilterBar({ filters, selected, onChange }) {

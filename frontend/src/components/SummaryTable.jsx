@@ -1,5 +1,4 @@
-
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 const categories = [
     { key: 'tam', label: 'TAM BİNİŞLER' },
@@ -14,17 +13,21 @@ const categories = [
 ];
 
 export function SummaryTable({ data }) {
-    if (!data || Object.keys(data).length === 0) return null;
-
-    const years = Object.keys(data).sort();
+    const years = useMemo(() => {
+        if (!data || Object.keys(data).length === 0) return [];
+        return Object.keys(data).sort();
+    }, [data]);
 
     const { categoryTotals, grandTotal, sortedCategories } = useMemo(() => {
+        if (years.length === 0) {
+            return { categoryTotals: {}, grandTotal: 0, sortedCategories: [] };
+        }
         const totals = {};
         let grand = 0;
         categories.forEach(cat => {
             let catTotal = 0;
             years.forEach(year => {
-                catTotal += (data[year][cat.key] || 0);
+                catTotal += (data[year]?.[cat.key] || 0);
             });
             totals[cat.key] = catTotal;
             grand += catTotal;
@@ -38,6 +41,8 @@ export function SummaryTable({ data }) {
 
         return { categoryTotals: totals, grandTotal: grand, sortedCategories: sorted };
     }, [data, years]);
+
+    if (!data || Object.keys(data).length === 0) return null;
 
     return (
         <div className="w-full rounded-xl border bg-card text-card-foreground shadow flex flex-col overflow-hidden">
@@ -65,7 +70,7 @@ export function SummaryTable({ data }) {
                             </tr>
                         </thead>
                         <tbody className="[&_tr:last-child]:border-0 font-mono">
-                            {sortedCategories.map((cat, idx) => {
+                            {sortedCategories.map((cat) => {
                                 const catTotal = categoryTotals[cat.key] || 0;
                                 const percent = grandTotal > 0 ? ((catTotal / grandTotal) * 100).toFixed(1) : "0.0";
                                 return (

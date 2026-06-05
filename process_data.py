@@ -54,8 +54,6 @@ def group_and_transform_data(df):
     grouped['uni_ikamet'] = grouped['uni_ikamet_16no'] + grouped['uni_ikamet_kart']
     
     return grouped
-    
-    return grouped
 
 def process_data():
     if not os.path.exists(OUTPUT_DIR):

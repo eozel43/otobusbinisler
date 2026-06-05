@@ -37,6 +37,79 @@ export function processDashboardData(rawData, selectedFilters) {
     const uniqueMonths = new Set(filteredRecords.map(r => r.date.substring(0, 7)));
     const uniqueMonthsCount = uniqueMonths.size || 1;
 
+    // --- Dynamic comparison period calculations for KPIs ---
+    let targetYear, targetMonth;
+    if (selectedFilters.year.length === 1 && selectedFilters.month.length === 1) {
+        targetYear = selectedFilters.year[0];
+        targetMonth = selectedFilters.month[0];
+    } else {
+        let latestDateStr = "";
+        filteredRecords.forEach(r => {
+            if (r.date > latestDateStr) {
+                latestDateStr = r.date;
+            }
+        });
+        if (latestDateStr) {
+            targetYear = latestDateStr.substring(0, 4);
+            targetMonth = parseInt(latestDateStr.substring(5, 7), 10);
+        }
+    }
+
+    const getMonthName = (mNum) => {
+        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+        return months[mNum - 1] || '';
+    };
+    const targetPeriodLabel = targetYear && targetMonth ? `${getMonthName(targetMonth)} ${targetYear}` : '';
+
+    const getKPIsForPeriod = (year, month) => {
+        const periodRecords = rawData.records.filter(r => {
+            const rYear = r.date.substring(0, 4);
+            const rMonth = parseInt(r.date.substring(5, 7), 10);
+            if (rYear !== year || rMonth !== month) return false;
+            if (selectedFilters.route.length > 0 && !selectedFilters.route.includes(r.route)) return false;
+            if (selectedFilters.cluster.length > 0 && !selectedFilters.cluster.includes(r.cluster)) return false;
+            if (selectedFilters.type.length > 0 && !selectedFilters.type.includes(r.type)) return false;
+            return true;
+        });
+
+        const totalB = periodRecords.reduce((sum, r) => sum + (useFreeColumn ? (r.free || 0) : (r.boardings || 0)), 0);
+        const totalR = useFreeColumn ? 0 : periodRecords.reduce((sum, r) => sum + (r.revenue || 0), 0);
+        const freeB = periodRecords.reduce((sum, r) => sum + (r.free || 0), 0);
+
+        return { totalBoardings: totalB, totalRevenue: totalR, freeBoardings: freeB };
+    };
+
+    let kpiMomChange = {};
+    let kpiYoyChange = {};
+
+    if (targetYear && targetMonth) {
+        const currentKPIs = getKPIsForPeriod(targetYear, targetMonth);
+        
+        const prevMonthVal = targetMonth === 1 ? 12 : targetMonth - 1;
+        const prevMonthYear = targetMonth === 1 ? String(parseInt(targetYear, 10) - 1) : targetYear;
+        const prevMonthKPIs = getKPIsForPeriod(prevMonthYear, prevMonthVal);
+
+        const prevYearYear = String(parseInt(targetYear, 10) - 1);
+        const prevYearKPIs = getKPIsForPeriod(prevYearYear, targetMonth);
+
+        const calcChange = (curr, prev) => {
+            if (!prev || prev === 0) return null;
+            return ((curr - prev) / prev) * 100;
+        };
+
+        kpiMomChange = {
+            totalBoardings: calcChange(currentKPIs.totalBoardings, prevMonthKPIs.totalBoardings),
+            totalRevenue: calcChange(currentKPIs.totalRevenue, prevMonthKPIs.totalRevenue),
+            freeBoardings: calcChange(currentKPIs.freeBoardings, prevMonthKPIs.freeBoardings)
+        };
+
+        kpiYoyChange = {
+            totalBoardings: calcChange(currentKPIs.totalBoardings, prevYearKPIs.totalBoardings),
+            totalRevenue: calcChange(currentKPIs.totalRevenue, prevYearKPIs.totalRevenue),
+            freeBoardings: calcChange(currentKPIs.freeBoardings, prevYearKPIs.freeBoardings)
+        };
+    }
+
     // 3. Prepare Top Routes
     const routeMap = {};
     filteredRecords.forEach(r => {
@@ -135,8 +208,138 @@ export function processDashboardData(rawData, selectedFilters) {
         summaryData[year].iade += r.iade || 0;
     });
 
+    // 7. Route x Card Type Heatmap Calculation
+    const heatmapRoutes = topRoutes.slice(0, 10).map(r => r.name);
+    const heatmapClusters = cardTypes.slice(0, 6).map(c => c.name);
+
+    const routeClusterMatrix = {};
+    heatmapRoutes.forEach(r => {
+        routeClusterMatrix[r] = {};
+        heatmapClusters.forEach(c => {
+            routeClusterMatrix[r][c] = 0;
+        });
+    });
+
+    filteredRecords.forEach(r => {
+        if (heatmapRoutes.includes(r.route) && heatmapClusters.includes(r.cluster)) {
+            const val = useFreeColumn ? (r.free || 0) : (r.boardings || 0);
+            routeClusterMatrix[r.route][r.cluster] += val;
+        }
+    });
+
+    const routeCardHeatmap = {
+        routes: heatmapRoutes,
+        clusters: heatmapClusters,
+        matrix: routeClusterMatrix
+    };
+
+    // 8. Executive Exception Calculations
+    let executiveExceptions = {
+        decliningRoutes: [],
+        highFreeRatioRoutes: []
+    };
+
+    if (targetYear && targetMonth) {
+        const prevMonthVal = targetMonth === 1 ? 12 : targetMonth - 1;
+        const prevMonthYear = targetMonth === 1 ? String(parseInt(targetYear, 10) - 1) : targetYear;
+
+        const routeBoardingsCurrent = {};
+        const routeBoardingsPrev = {};
+        const routeActualTotalCurrent = {}; // Denominator: actual total boardings (unaffected by type/cluster filters)
+        const routeFreeCount = {};
+
+        // Query rawData.records to prevent the active month filter from wiping out the comparison month records
+        const comparisonRecords = rawData.records.filter(r => {
+            if (selectedFilters.route.length > 0 && !selectedFilters.route.includes(r.route)) return false;
+            if (selectedFilters.cluster.length > 0 && !selectedFilters.cluster.includes(r.cluster)) return false;
+            if (selectedFilters.type.length > 0 && !selectedFilters.type.includes(r.type)) return false;
+            return true;
+        });
+
+        comparisonRecords.forEach(r => {
+            const rYear = r.date.substring(0, 4);
+            const rMonth = parseInt(r.date.substring(5, 7), 10);
+            
+            if (rYear === targetYear && rMonth === targetMonth) {
+                if (!routeBoardingsCurrent[r.route]) {
+                    routeBoardingsCurrent[r.route] = 0;
+                    routeFreeCount[r.route] = 0;
+                }
+                routeBoardingsCurrent[r.route] += useFreeColumn ? (r.free || 0) : (r.boardings || 0);
+                routeFreeCount[r.route] += (r.free || 0);
+            }
+
+            if (rYear === prevMonthYear && rMonth === prevMonthVal) {
+                if (!routeBoardingsPrev[r.route]) {
+                    routeBoardingsPrev[r.route] = 0;
+                }
+                routeBoardingsPrev[r.route] += useFreeColumn ? (r.free || 0) : (r.boardings || 0);
+            }
+        });
+
+        // Compute true denominator for free ratio (ignores cluster and type filters to get actual route total)
+        const denominatorRecords = rawData.records.filter(r => {
+            const rYear = r.date.substring(0, 4);
+            const rMonth = parseInt(r.date.substring(5, 7), 10);
+            if (rYear !== targetYear || rMonth !== targetMonth) return false;
+            if (selectedFilters.route.length > 0 && !selectedFilters.route.includes(r.route)) return false;
+            return true;
+        });
+
+        denominatorRecords.forEach(r => {
+            if (!routeActualTotalCurrent[r.route]) {
+                routeActualTotalCurrent[r.route] = 0;
+            }
+            routeActualTotalCurrent[r.route] += (r.boardings || 0);
+        });
+
+        const declineList = [];
+        Object.keys(routeBoardingsCurrent).forEach(rName => {
+            const currentVal = routeBoardingsCurrent[rName];
+            const prevVal = routeBoardingsPrev[rName] || 0;
+            if (prevVal > 300) { // filter noise
+                const diffVal = currentVal - prevVal;
+                const pctChange = (diffVal / prevVal) * 100;
+                if (diffVal < 0) {
+                    declineList.push({
+                        name: rName,
+                        current: currentVal,
+                        previous: prevVal,
+                        difference: diffVal,
+                        pctChange: parseFloat(pctChange.toFixed(1))
+                    });
+                }
+            }
+        });
+        executiveExceptions.decliningRoutes = declineList.sort((a, b) => a.difference - b.difference).slice(0, 5);
+
+        const freeRatioList = [];
+        Object.keys(routeBoardingsCurrent).forEach(rName => {
+            const actualTotalVal = routeActualTotalCurrent[rName] || 0;
+            const freeVal = routeFreeCount[rName] || 0;
+            if (actualTotalVal > 200) {
+                const ratio = (freeVal / actualTotalVal) * 100;
+                freeRatioList.push({
+                    name: rName,
+                    boardings: actualTotalVal,
+                    freeBoardings: freeVal,
+                    ratio: parseFloat(ratio.toFixed(1))
+                });
+            }
+        });
+        executiveExceptions.highFreeRatioRoutes = freeRatioList.sort((a, b) => b.ratio - a.ratio).slice(0, 5);
+    }
+
     return {
-        kpi: { totalBoardings, totalRevenue, freeBoardings, uniqueMonthsCount },
+        kpi: { 
+            totalBoardings, 
+            totalRevenue, 
+            freeBoardings, 
+            uniqueMonthsCount,
+            momChange: kpiMomChange,
+            yoyChange: kpiYoyChange,
+            targetPeriodLabel
+        },
         topRoutes,
         cardTypes,
         paidFreeTypes,
@@ -145,6 +348,8 @@ export function processDashboardData(rawData, selectedFilters) {
         trends,
         summaryData,
         heatmapData,
+        routeCardHeatmap,
+        executiveExceptions,
         filters: augmentedFilters
     };
 }

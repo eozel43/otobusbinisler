@@ -6,7 +6,24 @@ function cn(...inputs) {
     return twMerge(clsx(inputs));
 }
 
-export function StatsCard({ title, value, icon: Icon, description, className, index = 0 }) {
+export function StatsCard({ title, value, icon: Icon, description, momChange, yoyChange, periodLabel, className, index = 0 }) {
+    const renderChangeBadge = (changeVal) => {
+        if (changeVal === undefined || changeVal === null || isNaN(changeVal)) return null;
+        const isPositive = changeVal >= 0;
+        const text = isPositive ? `+${changeVal.toFixed(1)}%` : `${changeVal.toFixed(1)}%`;
+        
+        return (
+            <span className={clsx(
+                "font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded-md shadow-sm border",
+                isPositive 
+                    ? "text-emerald-700 bg-emerald-500/10 border-emerald-500/20 dark:text-emerald-400 dark:bg-emerald-500/20" 
+                    : "text-rose-700 bg-rose-500/10 border-rose-500/20 dark:text-rose-400 dark:bg-rose-500/20"
+            )}>
+                {text}
+            </span>
+        );
+    };
+
     return (
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -33,12 +50,37 @@ export function StatsCard({ title, value, icon: Icon, description, className, in
                     </motion.div>
                 )}
             </div>
-            <div className="p-6 pt-0 relative z-10">
-                <div className="text-3xl font-bold tracking-tight text-foreground font-lexend">{value}</div>
-                {description && (
-                    <div className="flex items-center gap-1.5 mt-2">
-                        <div className="h-1 w-1 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                        <p className="text-[11px] font-medium text-muted-foreground/80 leading-none">{description}</p>
+            <div className="p-6 pt-0 relative z-10 flex flex-col h-[calc(100%-54px)] justify-between">
+                <div>
+                    <div className="text-3xl font-bold tracking-tight text-foreground font-lexend">{value}</div>
+                    {description && (
+                        <div className="flex items-center gap-1.5 mt-2">
+                            <div className="h-1 w-1 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)] animate-pulse" />
+                            <p className="text-[10px] font-medium text-muted-foreground/80 leading-none">{description}</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* MoM & YoY Comparison section */}
+                {(momChange !== undefined || yoyChange !== undefined) && (
+                    <div className="flex flex-col gap-1.5 mt-4 pt-3 border-t border-border/60 text-[10px] font-medium text-muted-foreground w-full">
+                        {periodLabel && (
+                            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 font-bold mb-1 border-b border-border/40 pb-0.5">
+                                Referans Dönem: {periodLabel}
+                            </div>
+                        )}
+                        {momChange !== undefined && momChange !== null && !isNaN(momChange) && (
+                            <div className="flex items-center justify-between">
+                                <span>Önceki aya göre:</span>
+                                {renderChangeBadge(momChange)}
+                            </div>
+                        )}
+                        {yoyChange !== undefined && yoyChange !== null && !isNaN(yoyChange) && (
+                            <div className="flex items-center justify-between">
+                                <span>Geçen yılın aynı ayına göre:</span>
+                                {renderChangeBadge(yoyChange)}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

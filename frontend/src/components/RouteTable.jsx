@@ -1,5 +1,4 @@
 
-import React from 'react';
 
 export function RouteTable({ data }) {
     return (

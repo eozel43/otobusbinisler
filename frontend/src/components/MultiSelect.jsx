@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Search, X, Check } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDown, Search, Check } from 'lucide-react';
 
-export function MultiSelect({ options, selected, onChange, label, placeholder = 'Seçiniz...' }) {
+export function MultiSelect({ options, selected, onChange, placeholder = 'Seçiniz...' }) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const containerRef = useRef(null);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Users, CreditCard, Wallet, LogOut, Bus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StatsCard } from './components/StatsCard';
@@ -11,6 +11,8 @@ import { Login } from './components/Login';
 import { SummaryTable } from './components/SummaryTable';
 import { HeatmapChart } from './components/HeatmapChart';
 import { RouteEfficiencyChart } from './components/RouteEfficiencyChart';
+import { RouteCardHeatmap } from './components/RouteCardHeatmap';
+import { ExecutiveExceptionTable } from './components/ExecutiveExceptionTable';
 import { processDashboardData } from './utils/analytics';
 
 function App() {
@@ -162,18 +164,27 @@ function App() {
                         value={new Intl.NumberFormat('tr-TR').format(dashboardData.kpi.totalBoardings)}
                         icon={Users}
                         description={`Aylık Ortalama: ${new Intl.NumberFormat('tr-TR').format(Math.round(dashboardData.kpi.totalBoardings / dashboardData.kpi.uniqueMonthsCount))}`}
+                        momChange={dashboardData.kpi.momChange?.totalBoardings}
+                        yoyChange={dashboardData.kpi.yoyChange?.totalBoardings}
+                        periodLabel={dashboardData.kpi.targetPeriodLabel}
                     />
                     <StatsCard
                         title="Toplam Hasılat"
                         value={new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(dashboardData.kpi.totalRevenue)}
                         icon={Wallet}
                         description={`Aylık Ortalama: ${new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(dashboardData.kpi.totalRevenue / dashboardData.kpi.uniqueMonthsCount)}`}
+                        momChange={dashboardData.kpi.momChange?.totalRevenue}
+                        yoyChange={dashboardData.kpi.yoyChange?.totalRevenue}
+                        periodLabel={dashboardData.kpi.targetPeriodLabel}
                     />
                     <StatsCard
                         title="Ücretsiz Binişler"
                         value={new Intl.NumberFormat('tr-TR').format(dashboardData.kpi.freeBoardings)}
                         icon={CreditCard}
                         description={`Aylık Ortalama: ${new Intl.NumberFormat('tr-TR').format(Math.round(dashboardData.kpi.freeBoardings / dashboardData.kpi.uniqueMonthsCount))}`}
+                        momChange={dashboardData.kpi.momChange?.freeBoardings}
+                        yoyChange={dashboardData.kpi.yoyChange?.freeBoardings}
+                        periodLabel={dashboardData.kpi.targetPeriodLabel}
                     />
                 </div>
 
@@ -207,7 +218,7 @@ function App() {
                     {/* Heatmap Section */}
                     <AnimatePresence mode="wait">
                         <motion.div 
-                            className="mt-4 flex flex-col items-center"
+                            className="mt-4 flex flex-col gap-8 items-center w-full"
                             key={JSON.stringify(selectedFilters)}
                             initial={{ opacity: 0, scale: 0.98 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -217,8 +228,17 @@ function App() {
                             <HeatmapChart data={dashboardData.heatmapData} total={
                                 dashboardData.heatmapData ? Object.values(dashboardData.heatmapData).reduce((sum, yearData) => sum + Object.values(yearData).reduce((s, v) => s + v, 0), 0) : 0
                             } />
+                            <RouteCardHeatmap data={dashboardData.routeCardHeatmap} />
                         </motion.div>
                     </AnimatePresence>
+                </div>
+
+                {/* Executive Exceptions Section */}
+                <div className="space-y-4">
+                    <h2 className="text-xl font-bold tracking-tight font-lexend text-foreground uppercase border-b border-border pb-2">
+                        Yönetici İstisna Analizi (Executive Exceptions)
+                    </h2>
+                    <ExecutiveExceptionTable data={dashboardData.executiveExceptions} />
                 </div>
 
                 {/* Tables Section */}

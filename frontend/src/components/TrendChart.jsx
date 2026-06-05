@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { TrendingUp, TrendingDown, Layers, Users, Wallet, Coins } from 'lucide-react';
 
@@ -64,7 +64,6 @@ export function TrendChart({ data }) {
     }, [data, activeMetric]);
 
     const isPositive = averageChange >= 0;
-    const absChange = Math.abs(averageChange);
 
     const toggleViewMode = () => {
         setViewMode(prev => prev === 'total' ? 'split' : 'total');
@@ -178,11 +177,11 @@ export function TrendChart({ data }) {
                     {chartData.length > 1 && (
                         <div
                             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full border cursor-help transition-opacity hover:opacity-80 ${isPositive ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/30' : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/30'}`}
-                            title={`Aylık ortalama ${activeMetric === 'boardings' ? 'yolcu' : activeMetric === 'revenue' ? 'hasılat' : 'biniş başı gelir'} değişimi`}
+                            title={`Aylık trend ${activeMetric === 'boardings' ? 'yolcu' : activeMetric === 'revenue' ? 'hasılat' : 'biniş başı gelir'} artış/azalış eğimi`}
                         >
                             {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                             <span className="text-xs font-bold font-mono">
-                                {formatAverageChange(averageChange)} <span className="text-[10px] font-normal opacity-75">ort/ay</span>
+                                {formatAverageChange(averageChange)} <span className="text-[10px] font-normal opacity-75">Trend Eğimi</span>
                             </span>
                         </div>
                     )}

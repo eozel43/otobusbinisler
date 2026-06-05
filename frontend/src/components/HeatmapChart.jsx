@@ -1,5 +1,4 @@
-
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 const MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
 
