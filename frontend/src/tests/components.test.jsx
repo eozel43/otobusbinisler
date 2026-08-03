@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { RouteCardHeatmap } from '../components/RouteCardHeatmap';
 import { ExecutiveExceptionTable } from '../components/ExecutiveExceptionTable';
+import { HeatmapChart } from '../components/HeatmapChart';
 
 // Mock recharts because SVG layouts are hard to test in jsdom
 vi.mock('recharts', () => {
@@ -18,6 +19,16 @@ vi.mock('recharts', () => {
 });
 
 describe('New Dashboard Components', () => {
+    describe('HeatmapChart', () => {
+        it('only renders selected month columns when a month filter is active', () => {
+            render(<HeatmapChart data={{ '2026': { 5: 100, 6: 200 } }} total={100} selectedMonths={[5]} />);
+
+            expect(screen.getByText('May')).toBeInTheDocument();
+            expect(screen.queryByText('Haz')).not.toBeInTheDocument();
+            expect(screen.getAllByText('100').length).toBeGreaterThan(0);
+        });
+    });
+
     describe('RouteCardHeatmap', () => {
         const mockHeatmapData = {
             routes: ['Line 1', 'Line 2'],

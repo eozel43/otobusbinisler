@@ -3,7 +3,10 @@ export function processDashboardData(rawData, selectedFilters) {
 
     // Extract available Years and Months for filters
     const availableYears = [...new Set(rawData.records.map(r => r.date.substring(0, 4)))].sort().reverse();
-    const availableMonths = [...new Set(rawData.records.map(r => parseInt(r.date.substring(5, 7), 10)))].sort((a, b) => a - b);
+    const monthOptionRecords = selectedFilters.year.length > 0
+        ? rawData.records.filter(r => selectedFilters.year.includes(r.date.substring(0, 4)))
+        : rawData.records;
+    const availableMonths = [...new Set(monthOptionRecords.map(r => parseInt(r.date.substring(5, 7), 10)))].sort((a, b) => a - b);
 
     const augmentedFilters = {
         ...rawData.filters,
@@ -31,7 +34,8 @@ export function processDashboardData(rawData, selectedFilters) {
     const totalBoardings = filteredRecords.reduce((sum, r) => sum + (useFreeColumn ? (r.free || 0) : (r.boardings || 0)), 0);
     const totalRevenue = useFreeColumn ? 0 : filteredRecords.reduce((sum, r) => sum + (r.revenue || 0), 0);
     const freeBoardings = filteredRecords.reduce((sum, r) => sum + (r.free || 0), 0);
-    const totalKrediNfc = filteredRecords.reduce((sum, r) => sum + (useFreeColumn ? 0 : (r.kredi_nfc || 0)), 0);
+    const totalKredi = filteredRecords.reduce((sum, r) => sum + (useFreeColumn ? 0 : (r.kredi || 0)), 0);
+    const totalNfc = filteredRecords.reduce((sum, r) => sum + (useFreeColumn ? 0 : (r.nfc || 0)), 0);
     const totalAktarma = filteredRecords.reduce((sum, r) => sum + (useFreeColumn ? 0 : (r.aktarma || 0)), 0);
     
     const uniqueMonths = new Set(filteredRecords.map(r => r.date.substring(0, 7)));
@@ -157,8 +161,9 @@ export function processDashboardData(rawData, selectedFilters) {
     }));
 
     const krediPieData = [
-        { name: 'Kredi Kartı', value: totalKrediNfc },
-        { name: 'Diğer', value: Math.max(0, totalBoardings - totalKrediNfc) }
+        { name: 'Kredi Kartı', value: totalKredi },
+        { name: 'NFC/QR', value: totalNfc },
+        { name: 'Diğer', value: Math.max(0, totalBoardings - totalKredi - totalNfc) }
     ].filter(i => i.value > 0);
 
     const aktarmaPieData = [
@@ -169,15 +174,6 @@ export function processDashboardData(rawData, selectedFilters) {
     // 6. Aggregate Summary Data by Year
     const summaryData = {};
     const heatmapData = {};
-    
-    availableYears.forEach(y => { 
-        heatmapData[y] = {}; 
-        summaryData[y] = {
-            tam: 0, basin: 0, lise: 0, kredi: 0, nfc: 0, 
-            uni_ogrenci: 0, uni_16no_all: 0, uni_ikamet: 0, aktarma: 0,
-            abonman: 0, iade: 0
-        };
-    });
 
     filteredRecords.forEach(r => {
         const year = r.date.substring(0, 4);

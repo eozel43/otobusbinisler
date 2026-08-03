@@ -2,8 +2,12 @@ import { useMemo } from 'react';
 
 const MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
 
-export function HeatmapChart({ data, total }) {
+export function HeatmapChart({ data, total, selectedMonths = [] }) {
     // data is expected to be an object: { '2022': { 1: 1573715, 2: 1418631, ... }, '2023': { ... } }
+
+    const visibleMonths = useMemo(() => MONTHS
+        .map((label, index) => ({ label, number: index + 1 }))
+        .filter(month => selectedMonths.length === 0 || selectedMonths.includes(month.number)), [selectedMonths]);
     
     // Sort years descending
     const years = useMemo(() => Object.keys(data).sort((a, b) => b - a), [data]);
@@ -67,8 +71,8 @@ export function HeatmapChart({ data, total }) {
                                 </div>
                                 
                                 {/* Cells */}
-                                {MONTHS.map((month, idx) => {
-                                    const monthNum = idx + 1;
+                                {visibleMonths.map(month => {
+                                    const monthNum = month.number;
                                     const val = data[year]?.[monthNum] || 0;
                                     const color = getColor(val);
                                     // Use white text if the cell is dark (normalized > 0.5)
@@ -87,7 +91,7 @@ export function HeatmapChart({ data, total }) {
                                             {/* Tooltip */}
                                             {val > 0 && (
                                                 <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-xs rounded py-1 px-2 -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap pointer-events-none z-10 shadow-lg">
-                                                    {month} {year}: {new Intl.NumberFormat('tr-TR').format(val)}
+                                                    {month.label} {year}: {new Intl.NumberFormat('tr-TR').format(val)}
                                                 </div>
                                             )}
                                         </div>
@@ -99,9 +103,9 @@ export function HeatmapChart({ data, total }) {
                         {/* X-Axis Labels (Months) */}
                         <div className="flex gap-1 mt-1">
                             <div className="w-12 md:w-16 shrink-0"></div> {/* Spacer for Y-axis */}
-                            {MONTHS.map(month => (
-                                <div key={month} className="flex-1 text-center text-[10px] md:text-xs font-medium text-muted-foreground pt-1">
-                                    {month}
+                            {visibleMonths.map(month => (
+                                <div key={month.number} className="flex-1 text-center text-[10px] md:text-xs font-medium text-muted-foreground pt-1">
+                                    {month.label}
                                 </div>
                             ))}
                         </div>

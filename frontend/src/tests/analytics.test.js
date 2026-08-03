@@ -40,6 +40,16 @@ describe('processDashboardData utility', () => {
         expect(result.kpi.freeBoardings).toBe(1620); // 100 + 450 + 80 + 540 + 90 + 360
     });
 
+    it('should show credit card and NFC/QR as separate pie slices', () => {
+        const result = processDashboardData(mockRawData, defaultFilters);
+
+        expect(result.krediPieData).toEqual([
+            { name: 'Kredi Kartı', value: 1080 },
+            { name: 'NFC/QR', value: 270 },
+            { name: 'Diğer', value: 2850 }
+        ]);
+    });
+
     it('should calculate MoM and YoY comparison metrics', () => {
         const result = processDashboardData(mockRawData, defaultFilters);
         
@@ -93,6 +103,28 @@ describe('processDashboardData utility', () => {
         // Month filter is active, but exceptions must still calculate MoM changes (needs April 2026 records)
         expect(result.executiveExceptions.decliningRoutes.length).toBeGreaterThan(0);
         expect(result.executiveExceptions.decliningRoutes[0].name).toBe('Line B');
+    });
+
+    it('should only include filtered years in summary and heatmap data', () => {
+        const singleYearFilter = {
+            ...defaultFilters,
+            year: ['2026'],
+            month: [5]
+        };
+        const result = processDashboardData(mockRawData, singleYearFilter);
+
+        expect(Object.keys(result.summaryData)).toEqual(['2026']);
+        expect(Object.keys(result.heatmapData)).toEqual(['2026']);
+        expect(result.heatmapData['2026'][5]).toBe(1500);
+    });
+
+    it('should limit month filter options to months available in the selected year', () => {
+        const result = processDashboardData(mockRawData, {
+            ...defaultFilters,
+            year: ['2025']
+        });
+
+        expect(result.filters.months).toEqual([5]);
     });
 
     it('should calculate free boarding ratio correctly in onlyFree mode and type filter (onlyFree ratio bug regression test)', () => {

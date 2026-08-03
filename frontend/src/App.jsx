@@ -48,6 +48,20 @@ function App() {
     const handleFilterChange = (key, value) => {
         if (key === 'reset') {
             setSelectedFilters({ year: [], month: [], route: [], cluster: [], type: [], onlyFree: false });
+        } else if (key === 'year') {
+            setSelectedFilters(prev => {
+                const validMonths = new Set(
+                    (rawData?.records || [])
+                        .filter(record => value.length === 0 || value.includes(record.date.substring(0, 4)))
+                        .map(record => parseInt(record.date.substring(5, 7), 10))
+                );
+
+                return {
+                    ...prev,
+                    year: value,
+                    month: prev.month.filter(month => validMonths.has(month))
+                };
+            });
         } else {
             setSelectedFilters(prev => ({ ...prev, [key]: value }));
         }
@@ -203,8 +217,8 @@ function App() {
                     <div className="grid gap-4 md:grid-cols-2">
                         <CardTypePie
                             data={dashboardData.krediPieData}
-                            title="Kredi Kartı Biniş Oranı"
-                            description="Kredi Kartlı Biniş / Toplam Biniş"
+                            title="Kredi Kartı + NFC/QR Biniş Oranı"
+                            description="Kredi kartı ve NFC/QR binişlerinin toplam biniş içindeki dağılımı"
                             largeLegend={true}
                         />
                         <CardTypePie
@@ -225,7 +239,7 @@ function App() {
                             exit={{ opacity: 0, scale: 0.98 }}
                             transition={{ duration: 0.4 }}
                         >
-                            <HeatmapChart data={dashboardData.heatmapData} total={
+                            <HeatmapChart data={dashboardData.heatmapData} selectedMonths={selectedFilters.month} total={
                                 dashboardData.heatmapData ? Object.values(dashboardData.heatmapData).reduce((sum, yearData) => sum + Object.values(yearData).reduce((s, v) => s + v, 0), 0) : 0
                             } />
                             <RouteCardHeatmap data={dashboardData.routeCardHeatmap} />
