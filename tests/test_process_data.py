@@ -6,6 +6,7 @@ def test_group_and_transform_data():
     data = {
         'Tarih': pd.to_datetime(['2023-10-01', '2023-10-01', '2023-10-02']),
         'Uzun Hat Adı': ['Hat 1', 'Hat 1', 'Hat 2'],
+        'Kart Tipi': ['TAMKART', 'Sanal Kart', 'ÜCRETSİZ'],
         'Kart Tipi Kümelenmiş': ['Tam', 'Öğrenci', 'Tam'],
         'Ücretli/Ucretsiz kart': ['Ücretli', 'Ücretli', 'Ücretsiz'],
         # Boardings & Revenues
@@ -44,7 +45,12 @@ def test_group_and_transform_data():
     assert 'uni' in grouped.columns
     assert 'kredi_nfc' in grouped.columns
     assert 'uni_ikamet' in grouped.columns
+    assert 'sanal' in grouped.columns
+
+    # 4. Sanal Kart boardings should be exported as a separate metric
+    virtual_card_row = grouped[(grouped['route'] == 'Hat 1') & (grouped['cluster'] == 'Öğrenci')].iloc[0]
+    assert virtual_card_row['sanal'] == 50
     
-    # 4. Check if date format is string 'YYYY-MM-DD'
+    # 5. Check if date format is string 'YYYY-MM-DD'
     assert isinstance(grouped['date'].iloc[0], str)
     assert grouped['date'].iloc[0] == '2023-10-01'

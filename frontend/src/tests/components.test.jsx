@@ -1,8 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { RouteCardHeatmap } from '../components/RouteCardHeatmap';
 import { ExecutiveExceptionTable } from '../components/ExecutiveExceptionTable';
 import { HeatmapChart } from '../components/HeatmapChart';
+import { TrendChart } from '../components/TrendChart';
 
 // Mock recharts because SVG layouts are hard to test in jsdom
 vi.mock('recharts', () => {
@@ -10,15 +11,30 @@ vi.mock('recharts', () => {
         ResponsiveContainer: ({ children }) => <div>{children}</div>,
         BarChart: ({ children }) => <div data-testid="bar-chart">{children}</div>,
         Bar: ({ children }) => <div data-testid="bar">{children}</div>,
+        LineChart: ({ children }) => <div data-testid="line-chart">{children}</div>,
+        Line: ({ dataKey, name }) => <div data-testid={`line-${dataKey}`}>{name}</div>,
         Cell: () => <div data-testid="cell" />,
         XAxis: () => <div />,
         YAxis: () => <div />,
         CartesianGrid: () => <div />,
-        Tooltip: () => <div />
+        Tooltip: () => <div />,
+        Legend: () => <div />
     };
 });
 
 describe('New Dashboard Components', () => {
+    describe('TrendChart', () => {
+        it('offers a separate Sanal Kart boarding trend', () => {
+            render(<TrendChart data={[
+                { date: '2026-06-01', boardings: 1000, revenue: 10000, free: 100, sanal: 40 },
+                { date: '2026-07-01', boardings: 1200, revenue: 12000, free: 120, sanal: 55 }
+            ]} />);
+
+            fireEvent.click(screen.getByRole('button', { name: 'Sanal Kart' }));
+            expect(screen.getByTestId('line-sanal')).toHaveTextContent('Sanal Kart Biniş');
+        });
+    });
+
     describe('HeatmapChart', () => {
         it('only renders selected month columns when a month filter is active', () => {
             render(<HeatmapChart data={{ '2026': { 5: 100, 6: 200 } }} total={100} selectedMonths={[5]} />);

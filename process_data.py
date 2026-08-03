@@ -18,6 +18,11 @@ def group_and_transform_data(df):
     df['Kart Tipi Kümelenmiş'] = df['Kart Tipi Kümelenmiş'].fillna('Tanımsız')
     df['Ücretli/Ucretsiz kart'] = df['Ücretli/Ucretsiz kart'].fillna('Tanımsız')
     df['Uzun Hat Adı'] = df['Uzun Hat Adı'].fillna('Tanımsız')
+    df['Sanal Kart Biniş'] = np.where(
+        df['Kart Tipi'].fillna('').astype(str).str.strip().str.casefold().eq('sanal kart'),
+        df['Genel Toplam Biniş Adet'],
+        0
+    )
     
     grouped = df.groupby([
         df['Tarih'].dt.strftime('%Y-%m-%d'), 
@@ -33,6 +38,7 @@ def group_and_transform_data(df):
         'İLKOKUL-LİSE BİNİŞ': 'sum',
         'KREDİ KARTI BİNİŞ': 'sum',
         'NFC-QR BİNİŞ': 'sum',
+        'Sanal Kart Biniş': 'sum',
         'ÜNİVERSİTE ÖĞRENCİ KARTI': 'sum',
         'ÜNİVERSİTE ÖĞR. 16 NOLU HAT': 'sum',
         'ÜNİVERSİTE ÖĞR. İKAMET 16 NOLU HAT': 'sum',
@@ -45,7 +51,7 @@ def group_and_transform_data(df):
     grouped.columns = [
         'date', 'route', 'cluster', 'type', 
         'boardings', 'revenue', 'free', 
-        'tam', 'basin', 'lise', 'kredi', 'nfc', 'uni_ogrenci', 'uni_16no', 'uni_ikamet_16no', 'uni_ikamet_kart', 'aktarma', 'abonman', 'iade'
+        'tam', 'basin', 'lise', 'kredi', 'nfc', 'sanal', 'uni_ogrenci', 'uni_16no', 'uni_ikamet_16no', 'uni_ikamet_kart', 'aktarma', 'abonman', 'iade'
     ]
 
     # Combine columns for existing frontend charts/KPIs

@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, Layers, Users, Wallet, Coins } from 'lucide-react';
+import { TrendingUp, TrendingDown, Layers, Users, Wallet, Coins, CreditCard } from 'lucide-react';
 
 export function TrendChart({ data }) {
-    const [activeMetric, setActiveMetric] = useState('boardings'); // 'boardings', 'revenue', 'yield'
+    const [activeMetric, setActiveMetric] = useState('boardings'); // 'boardings', 'sanal', 'revenue', 'yield'
     const [viewMode, setViewMode] = useState('total'); // 'total' or 'split'
 
     // Data comes in daily format. We need to aggregate it by month for the chart.
@@ -17,11 +17,12 @@ export function TrendChart({ data }) {
             const monthKey = item.date.substring(0, 7) + '-01'; // Normalize to first day of month
 
             if (!aggregated[monthKey]) {
-                aggregated[monthKey] = { date: monthKey, boardings: 0, free: 0, paid: 0, revenue: 0 };
+                aggregated[monthKey] = { date: monthKey, boardings: 0, free: 0, paid: 0, revenue: 0, sanal: 0 };
             }
             aggregated[monthKey].boardings += item.boardings || 0;
             aggregated[monthKey].free += item.free || 0;
             aggregated[monthKey].revenue += item.revenue || 0;
+            aggregated[monthKey].sanal += item.sanal || 0;
         });
 
         // Calculate paid, yield and convert to array
@@ -74,6 +75,8 @@ export function TrendChart({ data }) {
         const prefix = val >= 0 ? '+' : '-';
         if (activeMetric === 'boardings') {
             return `${prefix}${new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(absVal)} yolcu`;
+        } else if (activeMetric === 'sanal') {
+            return `${prefix}${new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(absVal)} biniş`;
         } else if (activeMetric === 'revenue') {
             return `${prefix}${new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(absVal)}`;
         } else {
@@ -82,7 +85,7 @@ export function TrendChart({ data }) {
     };
 
     const formatYAxis = (value) => {
-        if (activeMetric === 'boardings') {
+        if (activeMetric === 'boardings' || activeMetric === 'sanal') {
             return `${(value / 1000).toFixed(0)}k`;
         } else if (activeMetric === 'revenue') {
             if (value >= 1000000) {
@@ -98,12 +101,14 @@ export function TrendChart({ data }) {
         let formattedValue;
         if (name === 'Toplam Yolcu' || name === 'Ücretli Biniş' || name === 'Ücretsiz Biniş') {
             formattedValue = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(value) + " Yolcu";
+        } else if (name === 'Sanal Kart Biniş') {
+            formattedValue = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(value) + " Biniş";
         } else if (name === 'Toplam Hasılat') {
             formattedValue = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(value);
         } else if (name === 'Biniş Başı Net Gelir') {
             formattedValue = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
         } else if (name === 'Eğilim (Trend)') {
-            if (activeMetric === 'boardings') {
+            if (activeMetric === 'boardings' || activeMetric === 'sanal') {
                 formattedValue = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(value) + " Yolcu";
             } else if (activeMetric === 'revenue') {
                 formattedValue = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(value);
@@ -123,7 +128,7 @@ export function TrendChart({ data }) {
             <div className="p-6 pb-4 flex flex-col xl:flex-row justify-between items-start xl:items-center shrink-0 gap-4">
                 <div className="space-y-1.5">
                     <h3 className="font-semibold leading-none tracking-tight font-lexend">Aylık Operasyonel Trend</h3>
-                    <p className="text-sm text-muted-foreground font-medium">Ay bazında yolcu sayısı, hasılat ve verim trend analizi</p>
+                    <p className="text-sm text-muted-foreground font-medium">Ay bazında yolcu, Sanal Kart, hasılat ve verim trend analizi</p>
                 </div>
                 
                 {/* Controls toolbar */}
@@ -138,6 +143,16 @@ export function TrendChart({ data }) {
                         >
                             <Users size={13} />
                             <span>Yolcu Sayısı</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveMetric('sanal');
+                                setViewMode('total');
+                            }}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeMetric === 'sanal' ? 'bg-background text-violet-600 dark:text-violet-400 shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            <CreditCard size={13} />
+                            <span>Sanal Kart</span>
                         </button>
                         <button
                             onClick={() => {
@@ -177,7 +192,7 @@ export function TrendChart({ data }) {
                     {chartData.length > 1 && (
                         <div
                             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full border cursor-help transition-opacity hover:opacity-80 ${isPositive ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/30' : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/30'}`}
-                            title={`Aylık trend ${activeMetric === 'boardings' ? 'yolcu' : activeMetric === 'revenue' ? 'hasılat' : 'biniş başı gelir'} artış/azalış eğimi`}
+                            title={`Aylık trend ${activeMetric === 'boardings' ? 'yolcu' : activeMetric === 'sanal' ? 'sanal kart binişi' : activeMetric === 'revenue' ? 'hasılat' : 'biniş başı gelir'} artış/azalış eğimi`}
                         >
                             {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                             <span className="text-xs font-bold font-mono">
@@ -229,6 +244,11 @@ export function TrendChart({ data }) {
                                     <Line type="monotone" dataKey="free" name="Ücretsiz Biniş" stroke="#8b5cf6" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 6 }} />
                                 </>
                             )
+                        ) : activeMetric === 'sanal' ? (
+                            <>
+                                <Line type="monotone" dataKey="sanal" name="Sanal Kart Biniş" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 6 }} />
+                                <Line type="monotone" dataKey="trend" name="Eğilim (Trend)" stroke="#f97316" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                            </>
                         ) : activeMetric === 'revenue' ? (
                             <>
                                 <Line type="monotone" dataKey="revenue" name="Toplam Hasılat" stroke="#10b981" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 6 }} />
